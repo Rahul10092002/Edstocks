@@ -122,7 +122,7 @@ const Sidebar = () => {
       {/* LINKS */}
       <div className="flex-grow mt-8">
         <SidebarLink
-          href="/dashboard"
+          href="/"
           icon={Layout}
           label="Dashboard"
           isCollapsed={isSidebarCollapsed}
