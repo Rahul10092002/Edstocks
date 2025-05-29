@@ -1,130 +1,102 @@
-import {
-  ExpenseByCategorySummary,
-  useGetDashboardMetricsQuery,
-} from "@/state/api";
-import { TrendingUp } from "lucide-react";
-import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-
-type ExpenseSums = {
-  [category: string]: number;
-};
-
-const colors = ["#00C49F", "#0088FE", "#FFBB28"];
+import { useGetDashboardMetricsQuery } from "@/state/api";
 
 const CardExpenseSummary = () => {
   const { data: dashboardMetrics, isLoading } = useGetDashboardMetricsQuery();
 
-  const expenseSummary = dashboardMetrics?.expenseSummary[0];
+  const expenseSummary = dashboardMetrics?.expenseSummary || [];
 
-  const expenseByCategorySummary =
-    dashboardMetrics?.expenseByCategorySummary || [];
-
-  const expenseSums = expenseByCategorySummary.reduce(
-    (acc: ExpenseSums, item: ExpenseByCategorySummary) => {
-      const category = item.category + " Expenses";
-      const amount = parseInt(item.amount, 10);
-      if (!acc[category]) acc[category] = 0;
-      acc[category] += amount;
-      return acc;
-    },
-    {}
-  );
-
-  const expenseCategories = Object.entries(expenseSums).map(
-    ([name, value]) => ({
-      name,
-      value,
-    })
-  );
-
-  const totalExpenses = expenseCategories.reduce(
-    (acc, category: { value: number }) => acc + category.value,
+  const totalExpenses = expenseSummary.reduce(
+    (sum, item) => sum + item.totalExpenses,
     0
   );
-  const formattedTotalExpenses = totalExpenses.toFixed(2);
+
+  // Format total expenses in millions (e.g., $2.3M)
+  const formattedTotalExpenses =
+    totalExpenses >= 1_000_000
+      ? `$${(totalExpenses / 1_000_000).toFixed(1)}M`
+      : totalExpenses.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        });
+ 
+
+  // Normalize heights for bar chart visualization
+  const maxExpense = Math.max(...expenseSummary.map((e) => e.totalExpenses));
+  const normalizedSummary = expenseSummary.map((e) => ({
+    ...e,
+    heightPercent: (e.totalExpenses / maxExpense) * 100,
+    month: new Date(e.date).toLocaleString("default", {
+      month: "short",
+      year: "numeric",
+      }),
+  }));
 
   return (
-    <div className="row-span-3 bg-white shadow-md rounded-2xl flex flex-col justify-between">
-      {isLoading ? (
-        <div className="m-5">Loading...</div>
-      ) : (
-        <>
-          {/* HEADER */}
-          <div>
-            <h2 className="text-lg font-semibold mb-2 px-7 pt-5">
-              Expense Summary
-            </h2>
-            <hr />
-          </div>
-          {/* BODY */}
-          <div className="xl:flex justify-between pr-7">
-            {/* CHART */}
-            <div className="relative basis-3/5">
-              <ResponsiveContainer width="100%" height={140}>
-                <PieChart>
-                  <Pie
-                    data={expenseCategories}
-                    innerRadius={50}
-                    outerRadius={60}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                  >
-                    {expenseCategories.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={colors[index % colors.length]}
-                      />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center basis-2/5">
-                <span className="font-bold text-xl">
-                  ${formattedTotalExpenses}
-                </span>
-              </div>
+    <div className="col-span-2 row-span-2 col-start-5 row-start-3 bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col">
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">
+            Expense Summary
+          </h3>
+          <p className="text-xs text-gray-500">Monthly expense trends</p>
+        </div>
+        <div className="p-2 bg-orange-50 rounded-lg">
+          <svg
+            className="w-4 h-4 text-orange-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div>
+          <p className="text-xs text-gray-500">Total Expenses</p>
+          <p className="text-xl font-bold text-gray-900">
+            {formattedTotalExpenses}
+          </p>
+        </div>
+        {/* Optional: Replace with real percentage change if available */}
+        <div className="flex items-center space-x-1 text-red-600">
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 13l-5 5m0 0l-5-5m5 5V6"
+            />
+          </svg>
+          <span className="text-xs font-medium">3.1%</span>
+        </div>
+      </div>
+
+      {/* Expense Bar Chart */}
+      <div className="flex items-end space-x-1 gap-3 flex-1 min-h-0">
+        {normalizedSummary.slice(0, 8).map((item, index) => (
+          <div key={index} className="flex-1 flex flex-col items-center h-full">
+            <div className="flex-1 flex items-end w-full">
+              <div
+                className="w-full bg-orange-400 rounded-t-sm hover:bg-orange-500 transition-colors"
+                style={{ height: `${item.heightPercent * 0.6}%` }}
+              ></div>
             </div>
-            {/* LABELS */}
-            <ul className="flex flex-col justify-around items-center xl:items-start py-5 gap-3">
-              {expenseCategories.map((entry, index) => (
-                <li
-                  key={`legend-${index}`}
-                  className="flex items-center text-xs"
-                >
-                  <span
-                    className="mr-2 w-3 h-3 rounded-full"
-                    style={{ backgroundColor: colors[index % colors.length] }}
-                  ></span>
-                  {entry.name}
-                </li>
-              ))}
-            </ul>
+            <span className="text-xs text-gray-500 mt-1">{item.month}</span>
           </div>
-          {/* FOOTER */}
-          <div>
-            <hr />
-            {expenseSummary && (
-              <div className="mt-3 flex justify-between items-center px-7 mb-4">
-                <div className="pt-2">
-                  <p className="text-sm">
-                    Average:{" "}
-                    <span className="font-semibold">
-                      ${expenseSummary.totalExpenses.toFixed(2)}
-                    </span>
-                  </p>
-                </div>
-                <span className="flex items-center mt-2">
-                  <TrendingUp className="mr-2 text-green-500" />
-                  30%
-                </span>
-              </div>
-            )}
-          </div>
-        </>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

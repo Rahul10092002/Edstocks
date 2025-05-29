@@ -5,16 +5,35 @@ import CardSalesSummary from "./CardSalesSummary";
 import CardPurchaseSummary from "./CardPurchaseSummary";
 import CardExpenseSummary from "./CardExpenseSummary";
 import StatCard from "./StatCard";
-import { Package, TrendingUp, TrendingDown, CheckCircle, Tag } from "lucide-react";
+import {
+  Package,
+  TrendingUp,
+  TrendingDown,
+  CheckCircle,
+  Tag,
+} from "lucide-react";
+import CustomerExpenses from "./CustomerExpenses";
+import PendingOrders from "./PendingOrders";
+import SalesDiscount from "./SalesDiscount";
 
 function Dashboard() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:overflow-auto gap-10 pb-4 custom-grid-rows">
+    <div className="grid grid-cols-6 grid-rows-6 gap-4 lg:gap-6 h-[800px]">
       <CardPopularProducts />
-      <CardSalesSummary />
-      <CardPurchaseSummary />
+      <div className="md:col-span-3 lg:col-span-2 lg:col-start-3 lg:row-span-4 h-[400px] md:h-[350px] lg:h-auto">
+        <CardSalesSummary />
+      </div>
+      <div className="md:col-span-3 lg:col-span-2 lg:col-start-5 lg:row-span-2 h-[200px] md:h-[250px] lg:h-auto">
+        <CardPurchaseSummary />
+      </div>
       <CardExpenseSummary />
-      <StatCard
+      <div className="md:col-span-1 lg:col-span-2 lg:row-start-5 lg:row-span-2 h-[250px] md:h-[300px] lg:h-auto">
+        <CustomerExpenses />
+      </div>
+
+      <PendingOrders />
+      <SalesDiscount />
+      {/* <StatCard
         title="Customer & Expenses"
         primaryIcon={<Package className="text-blue-600 w-6 h-6" />}
         dateRange="22 - 29 October 2023"
@@ -70,7 +89,7 @@ function Dashboard() {
             IconComponent: TrendingDown,
           },
         ]}
-      />
+      /> */}
     </div>
   );
 }

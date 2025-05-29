@@ -8,56 +8,98 @@ const CardPopularProducts = () => {
   const { data: dashboardMetrics, isLoading } = useGetDashboardMetricsQuery();
 
   return (
-    <div className="row-span-3 xl:row-span-6 bg-white shadow-md rounded-2xl pb-16">
-      {isLoading ? (
-        <div className="m-5">Loading...</div>
-      ) : (
-        <>
-          <h3 className="text-lg font-semibold px-7 pt-5 pb-2">
+    <div className="col-span-2 row-span-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">
             Popular Products
           </h3>
-          <hr />
-          <div className="overflow-auto h-full">
-            {dashboardMetrics?.popularProducts.map((product) => (
-              <div
-                key={product.productId}
-                className="flex items-center justify-between gap-3 px-5 py-7 border-b"
-              >
-                <div className="flex items-center gap-3">
-                  {/* <Image
-                    src={`https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/product${
-                      Math.floor(Math.random() * 3) + 1
-                    }.png`}
-                    alt={product.name}
-                    width={48}
-                    height={48}
-                    className="rounded-lg w-14 h-14"
-                  /> */}
-                  <div className="flex flex-col justify-between gap-1">
-                    <div className="font-bold text-gray-700">
-                      {product.name}
-                    </div>
-                    <div className="flex text-sm items-center">
-                      <span className="font-bold text-blue-500 text-xs">
-                        ${product.price}
-                      </span>
-                      <span className="mx-2">|</span>
-                      <Rating rating={product.rating || 0} />
-                    </div>
-                  </div>
-                </div>
+          <p className="text-sm text-gray-500">
+            Top selling products by revenue
+          </p>
+        </div>
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <svg
+            className="w-4 h-4 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
+          </svg>
+        </div>
+      </div>
 
-                <div className="text-xs flex items-center">
-                  <button className="p-2 rounded-full bg-blue-100 text-blue-600 mr-2">
-                    <ShoppingBag className="w-4 h-4" />
-                  </button>
-                  {Math.round(product.stockQuantity / 1000)}k Sold
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Products Table */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="overflow-y-auto flex-1 mb-3">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-white">
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-2 px-1 text-sm font-medium text-gray-500">
+                  Product
+                </th>
+                <th className="text-right py-2 px-1 text-sm font-medium text-gray-500">
+                  Price
+                </th>
+                <th className="text-right py-2 px-1 text-sm font-medium text-gray-500">
+                  Rating
+                </th>
+                <th className="text-right py-2 px-1 text-sm font-medium text-gray-500">
+                  Stock
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboardMetrics?.popularProducts.map((product) => (
+                <tr
+                  key={product?.productId}
+                  className="border-b border-gray-100"
+                >
+                  <td className="py-2 px-1">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-medium text-gray-600">
+                          {product.name.substring(0, 1)}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 truncate">
+                        {product.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="text-right py-2 px-1 text-sm text-gray-900">
+                    ${product.price}
+                  </td>
+                  <td className="text-right py-2 px-1">
+                    <div className="flex items-center justify-end space-x-1">
+                      <span className="text-sm text-gray-900">
+                        {product.rating}
+                      </span>
+                      <svg
+                        className="w-3 h-3 text-yellow-400 fill-current"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                  </td>
+                  <td className="text-right py-2 px-1 text-sm text-gray-900">
+                    {product?.stockQuantity >= 1000
+                      ? `${(product.stockQuantity / 1000).toFixed(1).replace(/\.0$/, "")}k`
+                      : product?.stockQuantity}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
